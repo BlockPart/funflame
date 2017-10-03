@@ -1,7 +1,18 @@
 <html>
 
 <head>
-
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: 175px 175px 175px;
+            grid-template-rows: 175px 175px;
+            grid-gap: 2rem;
+        }
+        
+        .item {
+            background-color: cyan;
+        }
+    </style>
 </head>
 
 <body>
@@ -12,34 +23,22 @@
         ...
         </div>
     -->
-
-    Read <input type="number" id="maxlines"> lines from
-    <input type="file" id="infile" accept='text/plain'>
-    <input type="button" id="start" value="Print lines">
-    <div id='output'>
-        ...
+    <div class="container">
+        <div class="item item1">
+            Read <input type="number" id="maxlines"> lines from
+            <input type="file" id="infile" accept='text/plain'>
+            <input type="button" id="start" value="Print lines">
+            <div id='output'>
+            </div>
+        </div>
+        <div class="item item2"></div>
+        <div class="item item3"></div>
+        <div class="item item4"></div>
+        <div class="item item5"></div>
     </div>
-
     <script>
-        /* var openFile = function(event) {
-                   var input = event.target;
-           
-                   var reader = new FileReader();
-                   reader.onload = function(){
-                     var text = reader.result;
-                     var node = document.getElementById('output');
-                     node.innerText = text;
-                     console.log(reader.result.substring(0, 200));
-                   };
-                   reader.readAsText(input.files[0]);
-                 };
-       */
-
-//se apela asta cu document infile.files[0] inainte de a selecta fisierul si de aia era null mereu. si am bagat onchange, si cand se selecteaza se schimba valoarea si atunci se apeleaza
-//si eroarea de mai devreme era ca nu erau toate acoladele puse. deci eu nu am facut nimic practic
-//ma pis pe JS
-        document.getElementById('infile').onchange = function () {
-            document.getElementById('start').onclick = function () {
+        document.getElementById('infile').onchange = function() {
+            document.getElementById('start').onclick = function() {
                 var file = document.getElementById('infile').files[0];
 
                 if (!file) {
@@ -49,16 +48,16 @@
                 var maxlines = parseInt(document.getElementById('maxlines').value, 10);
                 var lineno = 1;
                 // readSomeLines is defined below.
-                readSomeLines(file, maxlines, function (line) {
-                    document.getElementById("output").innerHTML += line ;
-                    document.getElementById("output").innerHTML += "<br>" ;
+                readSomeLines(file, maxlines, function(line) {
+                    document.getElementById("output").innerHTML += line;
+                    document.getElementById("output").innerHTML += "<br>";
                     console.log("Line: " + (lineno++) + line);
                 }, function onComplete() {
                     console.log('Read all lines');
                 });
-            
+
             }
-            
+
         };
         /**
          * Read up to and including |maxlines| lines from |file|.
@@ -77,10 +76,12 @@
             var linenumber = 0;
             var results = '';
             var fr = new FileReader();
-            fr.onload = function () {
+            fr.onload = function() {
                 // Use stream:true in case we cut the file
                 // in the middle of a multi-byte character
-                results += decoder.decode(fr.result, { stream: true });
+                results += decoder.decode(fr.result, {
+                    stream: true
+                });
                 var lines = results.split('\n');
                 results = lines.pop(); // In case the line did not end yet.
                 linecount += lines.length;
@@ -97,7 +98,7 @@
                 offset += CHUNK_SIZE;
                 seek();
             };
-            fr.onerror = function () {
+            fr.onerror = function() {
                 onComplete(fr.error);
             };
             seek();
@@ -116,9 +117,9 @@
                 }
                 var slice = file.slice(offset, offset + CHUNK_SIZE);
                 fr.readAsArrayBuffer(slice);
-                
+
                 console.log(file);
-                
+
             }
         }
     </script>
