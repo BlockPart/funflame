@@ -1,0 +1,127 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+
+
+    <!--<input type='file' accept='text/plain' onchange='openFile(event)'><br>
+        <div id='output'>
+        ...
+        </div>
+    -->
+
+    Read <input type="number" id="maxlines"> lines from
+    <input type="file" id="infile" accept='text/plain'>
+    <input type="button" id="start" value="Print lines">
+    <div id='output'>
+        ...
+    </div>
+
+    <script>
+        /* var openFile = function(event) {
+                   var input = event.target;
+           
+                   var reader = new FileReader();
+                   reader.onload = function(){
+                     var text = reader.result;
+                     var node = document.getElementById('output');
+                     node.innerText = text;
+                     console.log(reader.result.substring(0, 200));
+                   };
+                   reader.readAsText(input.files[0]);
+                 };
+       */
+
+//se apela asta cu document infile.files[0] inainte de a selecta fisierul si de aia era null mereu. si am bagat onchange, si cand se selecteaza se schimba valoarea si atunci se apeleaza
+//si eroarea de mai devreme era ca nu erau toate acoladele puse. deci eu nu am facut nimic practic
+//ma pis pe JS
+        document.getElementById('infile').onchange = function () {
+            document.getElementById('start').onclick = function () {
+                var file = document.getElementById('infile').files[0];
+
+                if (!file) {
+                    console.log('No file selected.');
+                    return;
+                }
+                var maxlines = parseInt(document.getElementById('maxlines').value, 10);
+                var lineno = 1;
+                // readSomeLines is defined below.
+                readSomeLines(file, maxlines, function (line) {
+                    document.getElementById("output").innerHTML += line ;
+                    document.getElementById("output").innerHTML += "<br>" ;
+                    console.log("Line: " + (lineno++) + line);
+                }, function onComplete() {
+                    console.log('Read all lines');
+                });
+            
+            }
+            
+        };
+        /**
+         * Read up to and including |maxlines| lines from |file|.
+         *
+         * @param {Blob} file - The file to be read.
+         * @param {integer} maxlines - The maximum number of lines to read.
+         * @param {function(string)} forEachLine - Called for each line.
+         * @param {function(error)} onComplete - Called when the end of the file
+         *     is reached or when |maxlines| lines have been read.
+         */
+        function readSomeLines(file, maxlines, forEachLine, onComplete) {
+            var CHUNK_SIZE = 50000;
+            var decoder = new TextDecoder();
+            var offset = 0;
+            var linecount = 0;
+            var linenumber = 0;
+            var results = '';
+            var fr = new FileReader();
+            fr.onload = function () {
+                // Use stream:true in case we cut the file
+                // in the middle of a multi-byte character
+                results += decoder.decode(fr.result, { stream: true });
+                var lines = results.split('\n');
+                results = lines.pop(); // In case the line did not end yet.
+                linecount += lines.length;
+
+                if (linecount > maxlines) {
+                    // Read too many lines? Truncate the results.
+                    lines.length -= linecount - maxlines;
+                    linecount = maxlines;
+                }
+
+                for (var i = 0; i < lines.length; ++i) {
+                    forEachLine(lines[i] + '\n');
+                }
+                offset += CHUNK_SIZE;
+                seek();
+            };
+            fr.onerror = function () {
+                onComplete(fr.error);
+            };
+            seek();
+
+            function seek() {
+                if (linecount === maxlines) {
+                    // We found enough lines.
+                    onComplete(); // Done.
+                    return;
+                }
+                if (offset !== 0 && offset >= file.size) {
+                    // We did not find all lines, but there are no more lines.
+                    forEachLine(results); // This is from lines.pop(), before.
+                    onComplete(); // Done
+                    return;
+                }
+                var slice = file.slice(offset, offset + CHUNK_SIZE);
+                fr.readAsArrayBuffer(slice);
+                
+                console.log(file);
+                
+            }
+        }
+    </script>
+</body>
+
+</html>
